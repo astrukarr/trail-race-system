@@ -1,0 +1,96 @@
+version: "3.8"
+
+services:
+  # PostgreSQL baza podataka
+  postgres:
+    image: postgres:15
+    container_name: trail-race-postgres
+    environment:
+      POSTGRES_DB: trail_race_db
+      POSTGRES_USER: trail_race_user
+      POSTGRES_PASSWORD: trail_race_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - trail-race-network
+
+  # RabbitMQ messaging sustav
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: trail-race-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: trail_race_user
+      RABBITMQ_DEFAULT_PASS: trail_race_password
+    ports:
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - trail-race-network
+
+  # Command Service (mikroservis za promjene)
+  command-service:
+    build:
+      context: ./command-service
+      dockerfile: Dockerfile
+    container_name: trail-race-command-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=postgresql://trail_race_user:trail_race_password@postgres:5432/trail_race_db
+      - RABBITMQ_URL=amqp://trail_race_user:trail_race_password@rabbitmq:5672
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - trail-race-network
+
+  # Query Service (mikroservis za čitanje)
+  query-service:
+    build:
+      context: ./query-service
+      dockerfile: Dockerfile
+    container_name: trail-race-query-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - DATABASE_URL=postgresql://trail_race_user:trail_race_password@postgres:5432/trail_race_db
+      - RABBITMQ_URL=amqp://trail_race_user:trail_race_password@rabbitmq:5672
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - trail-race-network
+
+  # Web Application (Next.js frontend)
+  web-app:
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile
+    container_name: trail-race-web-app
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+      - REACT_APP_QUERY_URL=http://localhost:3002
+    depends_on:
+      - command-service
+      - query-service
+    networks:
+      - trail-race-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  trail-race-network:
+    driver: bridge
