@@ -7,6 +7,11 @@ Minimal, production‑ready microservices app for trail race management.
 - Infra: PostgreSQL, RabbitMQ
 - Auth: JWT (roles: Applicant, Administrator)
 
+Note: Example environment files are provided (copy and adjust as needed):
+- `command-service/.env.example`
+- `query-service/.env.example`
+- `web-app/.env.local.example`
+
 ## Quick Start (Docker, recommended)
 
 ```bash
@@ -36,36 +41,17 @@ cd ../web-app && pnpm install && pnpm dev
 ```
 Open http://localhost:3000
 
-## Environment Variables
+## Configuration
 
-Command Service (port 3001):
-```env
-DATABASE_URL=postgresql://trail_race_user:trail_race_password@localhost:5432/trail_race_db
-RABBITMQ_URL=amqp://trail_race_user:trail_race_password@localhost:5672
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-PORT=3001
-NODE_ENV=development
-CORS_ORIGIN=http://localhost:3000
+Use the example env files and create real env files from them:
+```bash
+cp command-service/.env.example command-service/.env
+cp query-service/.env.example query-service/.env
+cp web-app/.env.local.example web-app/.env.local
 ```
+Then adjust values for your environment (DATABASE_URL, RABBITMQ_URL, JWT_SECRET, etc.).
 
-Query Service (port 3002):
-```env
-DATABASE_URL=postgresql://trail_race_user:trail_race_password@localhost:5432/trail_race_db
-RABBITMQ_URL=amqp://trail_race_user:trail_race_password@localhost:5672
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-PORT=3002
-NODE_ENV=development
-CORS_ORIGIN=http://localhost:3000
-```
-
-Web App (Next.js):
-```env
-COMMAND_API_URL=http://localhost:3001
-QUERY_API_URL=http://localhost:3002
-```
-The app exposes these as `NEXT_PUBLIC_COMMAND_API_URL` and `NEXT_PUBLIC_QUERY_API_URL` via `next.config.js`.
-
-For Docker local, the Compose file already provides:
+For Docker local, the Compose file already provides sensible defaults:
 - Postgres: `trail_race_db` / `trail_race_user` / `trail_race_password`
 - RabbitMQ: `trail_race_user` / `trail_race_password`
 - Service URLs: internal docker DNS (`postgres`, `rabbitmq`), ports mapped to host.
