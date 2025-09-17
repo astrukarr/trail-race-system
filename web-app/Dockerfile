@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Install curl for health checks
 RUN apk add --no-cache curl
@@ -15,6 +15,8 @@ RUN apk add --no-cache curl
 COPY . .
 
 # Build the application
+ENV NEXT_BUILD_WORKER_TIMEOUT=300000
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Expose port
