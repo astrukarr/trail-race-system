@@ -38,28 +38,32 @@ Open http://localhost:3000
 
 ## Environment Variables
 
-These are the effective variables used by services (Docker Compose sets sensible defaults for local).
+Command Service (port 3001):
+```env
+DATABASE_URL=postgresql://trail_race_user:trail_race_password@localhost:5432/trail_race_db
+RABBITMQ_URL=amqp://trail_race_user:trail_race_password@localhost:5672
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+PORT=3001
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:3000
+```
 
-- Command Service (port 3001)
-  - DATABASE_URL: e.g. postgresql://user:pass@host:5432/trail_race_db
-  - RABBITMQ_URL: e.g. amqp://user:pass@host:5672
-  - JWT_SECRET: required in production
-  - PORT (default 3001)
-  - NODE_ENV (development|production)
-  - CORS_ORIGIN (default http://localhost:3000)
+Query Service (port 3002):
+```env
+DATABASE_URL=postgresql://trail_race_user:trail_race_password@localhost:5432/trail_race_db
+RABBITMQ_URL=amqp://trail_race_user:trail_race_password@localhost:5672
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+PORT=3002
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:3000
+```
 
-- Query Service (port 3002)
-  - DATABASE_URL
-  - RABBITMQ_URL
-  - JWT_SECRET: required in production (has a safe default for local)
-  - PORT (default 3002)
-  - NODE_ENV
-  - CORS_ORIGIN (default http://localhost:3000)
-
-- Web App (Next.js)
-  - COMMAND_API_URL (default http://localhost:3001)
-  - QUERY_API_URL (default http://localhost:3002)
-  - Exposed to client as NEXT_PUBLIC_COMMAND_API_URL / NEXT_PUBLIC_QUERY_API_URL via `next.config.js`
+Web App (Next.js):
+```env
+COMMAND_API_URL=http://localhost:3001
+QUERY_API_URL=http://localhost:3002
+```
+The app exposes these as `NEXT_PUBLIC_COMMAND_API_URL` and `NEXT_PUBLIC_QUERY_API_URL` via `next.config.js`.
 
 For Docker local, the Compose file already provides:
 - Postgres: `trail_race_db` / `trail_race_user` / `trail_race_password`
